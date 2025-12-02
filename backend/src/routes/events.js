@@ -49,4 +49,20 @@ router.post("/:id/book", auth(), async (req, res) => {
   }
 });
 
+// GET /api/events/my/bookings
+router.get("/my/bookings", auth(), async (req, res) => {
+  try {
+    const userId = req.user.id; // from auth middleware
+    const bookings = await Booking.find({ userId })
+      .populate("eventId") // populate event info
+      .sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 export default router;

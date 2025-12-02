@@ -12,10 +12,11 @@ export default function MyBookings() {
 useEffect(() => {
   API.get("/events/my/bookings")
     .then(res => setBookings(res.data))
-    .catch(err => {
-      setErr(err.response?.data?.message || "Could not load bookings");
-      if (err.response?.message.status === 401) navigate("/login");
-    })
+.catch(err => {
+  setErr(err.response?.data?.message || "Could not load bookings");
+  if (err.response?.status === 401) navigate("/login");
+})
+
     .finally(() => setLoading(false));
 }, []);
 
@@ -49,9 +50,16 @@ useEffect(() => {
                   </div>
 
                   <div className="text-right">
-                    <div className={`px-3 py-1 rounded text-sm ${b.status === "booked" ? "bg-green-700 text-white" : "bg-gray-700 text-gray-200"}`}>
-                      {b.status}
-                    </div>
+<div className={`px-3 py-1 rounded text-sm ${
+  b.status === "booked"
+    ? "bg-green-700 text-white"
+    : b.status === "cancelled"
+    ? "bg-red-600 text-white"
+    : "bg-gray-700 text-gray-200"
+}`}>
+  {b.status || "—"}
+</div>
+
                     <div className="mt-3">
                       <Link to={`/event/${ev?._id || ev?.id}`} className="text-blue-300 hover:underline">View</Link>
                     </div>
