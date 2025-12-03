@@ -9,17 +9,30 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-useEffect(() => {
-  API.get("/events/my/bookings")
-    .then(res => setBookings(res.data))
-.catch(err => {
-  setErr(err.response?.data?.message || "Could not load bookings");
-  if (err.response?.status === 401) navigate("/login");
-})
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-    .finally(() => setLoading(false));
-}, []);
+    const fetchBookings = async () => {
+      try {
+        const res = await API.get("/events/my/bookings");
+        setBookings(res.data);
+      } catch (error) {
+        setErr(error.response?.data?.message || "Could not load bookings");
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchBookings();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white pb-12">
@@ -38,7 +51,7 @@ useEffect(() => {
           <div className="text-gray-400">You haven't booked any events yet.</div>
         ) : (
           <div className="space-y-4">
-            {bookings.map(b => {
+            {bookings.map((b) => {
               const ev = b.eventId || b.event;
               const bookedAt = new Date(b.createdAt || b.created_at || b.date).toLocaleString();
               return (
@@ -50,15 +63,15 @@ useEffect(() => {
                   </div>
 
                   <div className="text-right">
-<div className={`px-3 py-1 rounded text-sm ${
-  b.status === "booked"
-    ? "bg-green-700 text-white"
-    : b.status === "cancelled"
-    ? "bg-red-600 text-white"
-    : "bg-gray-700 text-gray-200"
-}`}>
-  {b.status || "—"}
-</div>
+                    <div className={`px-3 py-1 rounded text-sm ${
+                      b.status === "booked"
+                        ? "bg-green-700 text-white"
+                        : b.status === "cancelled"
+                        ? "bg-red-600 text-white"
+                        : "bg-gray-700 text-gray-200"
+                    }`}>
+                      {b.status || "—"}
+                    </div>
 
                     <div className="mt-3">
                       <Link to={`/event/${ev?._id || ev?.id}`} className="text-blue-300 hover:underline">View</Link>
