@@ -6,28 +6,41 @@ import { useEffect, useState } from "react";
 export default function EventsAdmin() {
   const [events, setEvents] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  getEvents();
+}, []);
+
+const getEvents = async () => {
+  try {
+    const res = await api.get("/admin/events"); // Note: use /admin/events
+    setEvents(res.data);
+  } catch (err) {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/admin/login";
+    }
+    console.error(err.response?.data || err);
+  }
+};
+
+const deleteEvent = async (id) => {
+  if (!confirm("Are you sure you want to delete this event?")) return;
+  try {
+    await api.delete(`/admin/events/${id}`);
     getEvents();
-  }, []);
-
-  const getEvents = async () => {
-    try {
-      const res = await api.get("/events");
-      setEvents(res.data);
-    } catch (err) {
-      console.error(err.response?.data);
+  } catch (err) {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/admin/login";
     }
-  };
-
-  const deleteEvent = async (id) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
-    try {
-      await api.delete(`/admin/events/${id}`);
-      getEvents();
-    } catch (err) {
-      console.error(err.response?.data);
-    }
-  };
+    console.error(err.response?.data || err);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-950">

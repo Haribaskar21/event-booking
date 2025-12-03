@@ -5,18 +5,27 @@ import { useEffect, useState } from "react";
 export default function BookingsAdmin() {
   const [bookings, setBookings] = useState([]);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  fetchBookings();
+}, []);
 
-  const fetchBookings = async () => {
-    try {
-      const res = await api.get("/admin/bookings");
-      setBookings(res.data);
-    } catch (err) {
-      console.error(err.response?.data);
+const fetchBookings = async () => {
+  try {
+    const res = await api.get("/admin/bookings");
+    setBookings(res.data);
+  } catch (err) {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/admin/login";
     }
-  };
+    console.error(err.response?.data || err);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-gray-950">

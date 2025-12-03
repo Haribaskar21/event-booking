@@ -5,18 +5,28 @@ import { useEffect, useState } from "react";
 export default function UsersAdmin() {
   const [users, setUsers] = useState([]);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/admin/login";
+    return;
+  }
+  fetchUsers();
+}, []);
 
-  const fetchUsers = async () => {
-    try {
-      const res = await api.get("/admin/users");
-      setUsers(res.data);
-    } catch (err) {
-      console.error(err.response?.data);
+const fetchUsers = async () => {
+  try {
+    const res = await api.get("/admin/users");
+    setUsers(res.data);
+  } catch (err) {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/admin/login";
     }
-  };
+    console.error(err.response?.data || err);
+  }
+};
+
 
   return (
     <div className="flex bg-gray-900 min-h-screen text-gray-200">

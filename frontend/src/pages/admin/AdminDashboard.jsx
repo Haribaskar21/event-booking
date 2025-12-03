@@ -12,6 +12,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/admin/login";
+      return;
+    }
     fetchCounts();
   }, []);
 
@@ -20,6 +25,10 @@ export default function AdminDashboard() {
       const res = await api.get("/admin/overview");
       setData(res.data);
     } catch (err) {
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/admin/login";
+      }
       console.error(err.response?.data || err);
     } finally {
       setLoading(false);
@@ -50,13 +59,10 @@ export default function AdminDashboard() {
   return (
     <div className="flex bg-gray-900 min-h-screen text-gray-200">
       <SidebarAdmin />
-
       <main className="flex-1 p-10">
         <h1 className="text-4xl font-extrabold mb-10 text-blue-400 drop-shadow-lg tracking-wide">
           Admin Dashboard
         </h1>
-
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {cards.map((card, i) => (
             <div
