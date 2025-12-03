@@ -21,7 +21,8 @@ const AdminLogin = () => {
 
 if (data.user.role !== "admin") return setError("Admins only!");
 
-localStorage.setItem("adminToken", data.token); // FIXED
+localStorage.setItem("token", data.token); // new
+
 navigate("/admin");
 
     } catch (err) {
